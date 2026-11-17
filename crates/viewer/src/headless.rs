@@ -3,15 +3,15 @@
 use anyhow::Result;
 use relief_terrain::Terrain;
 
-use crate::camera::{Ground, Pose};
 use crate::capture::{self, OffscreenTarget};
-use crate::gpu::Gpu;
-use crate::light_rig::LightRig;
-use crate::params::ShadingParams;
-use crate::renderer::{FrameInput, Renderer, SideInput};
+use relief_render::camera::{Ground, Pose};
+use relief_render::gpu::Gpu;
+use relief_render::light_rig::LightRig;
+use relief_render::params::ShadingParams;
+use relief_render::renderer::{FrameInput, Renderer, SideInput};
 
-pub use crate::camera::DEFAULT_FOV_Y;
-pub use crate::renderer::DEFAULT_PIXELS_PER_QUAD;
+pub use relief_render::camera::DEFAULT_FOV_Y;
+pub use relief_render::renderer::DEFAULT_PIXELS_PER_QUAD;
 
 const OUTPUT_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8UnormSrgb;
 

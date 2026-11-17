@@ -17,14 +17,14 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use glam::Vec2;
+use relief_render::camera::{CameraInput, Ground, OrbitView, GROUND_LEVEL};
+use relief_render::explore::{opening_view_within, Explorer};
+use relief_render::gpu::Gpu;
+use relief_render::labels::{Labels, View as LabelView};
+use relief_render::params::{Condition, ShadingParams};
+use relief_render::renderer::{FrameInput, Renderer, SideInput, DEFAULT_PIXELS_PER_QUAD};
 use relief_terrain::pack::{self, NoTiles};
 use relief_terrain::{lv95, Meta};
-use relief_viewer::camera::{CameraInput, Ground, OrbitView, GROUND_LEVEL};
-use relief_viewer::explore::{opening_view_within, Explorer};
-use relief_viewer::gpu::Gpu;
-use relief_viewer::labels::{Labels, View as LabelView};
-use relief_viewer::params::{Condition, ShadingParams};
-use relief_viewer::renderer::{FrameInput, Renderer, SideInput, DEFAULT_PIXELS_PER_QUAD};
 use wasm_bindgen::prelude::*;
 
 use crate::feed::{FeedMonitor, FetchFeed};

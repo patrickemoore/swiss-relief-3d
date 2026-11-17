@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/terrain", "crates/preprocess", "crates/viewer", "crates/web"]
+members = ["crates/terrain", "crates/preprocess", "crates/render", "crates/viewer", "crates/web"]
 
 [workspace.package]
 version = "0.1.0"

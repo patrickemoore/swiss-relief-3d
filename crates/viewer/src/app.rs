@@ -16,14 +16,14 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowId};
 
-use crate::camera::{CameraInput, CameraMode};
 use crate::capture::{self, OffscreenTarget};
-use crate::gpu::Gpu;
-use crate::params::Condition;
-use crate::renderer::timers::Pass;
-use crate::renderer::{FrameInput, Renderer, SideInput};
 use crate::session::Session;
 use crate::ui::{self, Performance};
+use relief_render::camera::{CameraInput, CameraMode};
+use relief_render::gpu::Gpu;
+use relief_render::params::Condition;
+use relief_render::renderer::timers::Pass;
+use relief_render::renderer::{FrameInput, Renderer, SideInput};
 
 /// Directory frame dumps are written to.
 const CAPTURE_DIR: &str = "captures";

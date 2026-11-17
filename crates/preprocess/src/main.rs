@@ -115,7 +115,7 @@ struct WebArgs {
     #[arg(long, default_value = "data/switzerland")]
     data: PathBuf,
     /// Output directory, to be served as static files
-    #[arg(long, default_value = "web/public/terrain")]
+    #[arg(long, default_value = "web/demo/public/terrain")]
     out: PathBuf,
     /// Finest pyramid level to include: 0 keeps the 10 m cells, 1 stops at
     /// 20 m, 2 at 40 m. Each level left out makes the result about three

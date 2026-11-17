@@ -11,13 +11,13 @@ use anyhow::Result;
 use glam::{Vec2, Vec3};
 use relief_terrain::{Meta, Terrain};
 
-use crate::camera::{CameraController, CameraInput, CameraMode, Ground, OrbitView, Pose, DEFAULT_FOV_Y};
-use crate::explore;
-use crate::labels::Labels;
-use crate::light_rig::LightRig;
-use crate::params::{self, Condition, ShadingParams, PRESET_DIR};
-use crate::path::{self, CameraPath, Place, Recorder, Scene, Viewpoint, PATH_DIR};
-use crate::renderer::DEFAULT_PIXELS_PER_QUAD;
+use relief_render::camera::{CameraController, CameraInput, CameraMode, Ground, OrbitView, Pose, DEFAULT_FOV_Y};
+use relief_render::explore;
+use relief_render::labels::Labels;
+use relief_render::light_rig::LightRig;
+use relief_render::params::{self, Condition, ShadingParams, PRESET_DIR};
+use relief_render::path::{self, CameraPath, Place, Recorder, Scene, Viewpoint, PATH_DIR};
+use relief_render::renderer::DEFAULT_PIXELS_PER_QUAD;
 
 /// Width over height of the window before its size is known.
 const START_ASPECT: f32 = 16.0 / 9.0;

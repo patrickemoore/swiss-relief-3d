@@ -31,7 +31,7 @@ project at `web/` (`npm install ../swiss-relief-3d/web`, or `npm link`).
 | Terrain | 2.6 MB up front, then tiles on demand | static files at `dataUrl` |
 
 The terrain directory is produced by `relief-prep web` (see the repository
-README) and lands in `public/terrain`. Put it on any static host or CDN and
+README) and lands in `demo/public/terrain`. Put it on any static host or CDN and
 pass its URL as `dataUrl`. With every level it is 520 MB; a close-up view
 pulls down 8–15 MB of it, the whole-country view nothing at all. If that is
 too much to host, drop the finest level:
@@ -82,7 +82,7 @@ const SwissRelief = dynamic(() => import('swiss-relief').then((m) => m.SwissReli
 | `attribution` | `'Terrain © swisstopo'` | swisstopo's terms require the credit. |
 | `onReady`, `onError` | | Get a handle to the map, or the reason it failed. |
 
-A `poster` is worth having; the demo uses `public/poster.jpg`, rendered with
+A `poster` is worth having; the demo uses `demo/public/poster.jpg`, rendered with
 `relief-viewer snapshot --preset presets/showcase.json`.
 
 The ref handle (also passed to `onReady`) has `places`, `flyTo(id)`,
@@ -139,8 +139,11 @@ npm run build:demo   # the demo page, into dist-demo/
 Demo page query options: `?tour`, `?compare`, `?dark`, `?light`, `?readout`,
 `?embed` (no wordmark).
 
-The demo expects the terrain in `public/terrain`. The built demo does not
-include it; serve a copy next to it or build with `VITE_TERRAIN_URL` set.
+`src/` is the component and everything in `demo/` is the page around it:
+`demo/main.tsx`, `demo/demo.css` and the static files in `demo/public`,
+which is also where `relief-prep web` puts the terrain. The built demo does
+not include the terrain; serve a copy next to it or build with
+`VITE_TERRAIN_URL` set.
 
 The renderer is Rust, in `crates/web`. After changing it:
 
@@ -154,9 +157,10 @@ in `src/wasm/` are checked in so the package builds without a Rust toolchain.
 
 ### Scripts
 
-- `scripts/labels.mjs` rebuilds the gazetteer the labels come from (Wikidata
-  → `crates/viewer/assets/labels.json`, embedded in the renderer; rebuild the
-  wasm afterwards).
+These drive the demo page; none of them is part of the package. (The
+gazetteer the labels come from is built by `tools/labels.mjs` at the
+repository root, since it feeds the renderer, not the page.)
+
 - `scripts/smoke.mjs` drives the page in headless Chrome and takes
   screenshots. Steps are seconds, JavaScript, or gestures:
 
@@ -168,4 +172,4 @@ in `src/wasm/` are checked in so the package builds without a Rust toolchain.
   `PLAIN` hides float32 filtering as a phone GPU would, `NOGPU` hides WebGPU
   entirely, `SCHEME=dark` for dark mode. `swissRelief` is on `window` in dev
   builds.
-- `scripts/flight-gif.mjs` records the flight GIF in the README.
+- `scripts/flight.mjs` records the flight animation in the README.

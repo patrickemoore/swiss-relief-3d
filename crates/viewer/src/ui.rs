@@ -7,13 +7,13 @@
 
 use egui::{CollapsingHeader, ComboBox, Context, Grid, RichText, ScrollArea, SidePanel, Slider, Ui};
 
-use crate::camera::CameraMode;
-use crate::labels::{Kind as LabelKind, View as LabelView};
-use crate::params::{Condition, DebugView, LightMode, ShadingMode, ShadingParams};
-use crate::path::WHOLE_COUNTRY;
-use crate::renderer::timers::Pass;
-use crate::renderer::FrameStats;
 use crate::session::Session;
+use relief_render::camera::CameraMode;
+use relief_render::labels::{Kind as LabelKind, View as LabelView};
+use relief_render::params::{Condition, DebugView, LightMode, ShadingMode, ShadingParams};
+use relief_render::path::WHOLE_COUNTRY;
+use relief_render::renderer::timers::Pass;
+use relief_render::renderer::FrameStats;
 
 const PANEL_WIDTH: f32 = 340.0;
 const SIDE_NAMES: [&str; 2] = ["A", "B"];

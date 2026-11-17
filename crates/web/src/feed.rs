@@ -12,11 +12,11 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use anyhow::{anyhow, bail, ensure, Result};
+use relief_render::camera::{GroundTiles, TileHeights};
+use relief_render::renderer::clipmap::{derive_from_parent, derive_from_whole, Prepared, TileFeed, TileKey};
 use relief_terrain::pack::{self, TileIndex};
 use relief_terrain::terrain::TILED_LEVELS;
 use relief_terrain::{Grid, Terrain, Tile};
-use relief_viewer::camera::{GroundTiles, TileHeights};
-use relief_viewer::renderer::clipmap::{derive_from_parent, derive_from_whole, Prepared, TileFeed, TileKey};
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::{spawn_local, JsFuture};
 

@@ -6,7 +6,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 
-use crate::gpu::Gpu;
+use relief_render::gpu::Gpu;
 
 /// A texture the renderer can draw into and the CPU can read back.
 pub struct OffscreenTarget {

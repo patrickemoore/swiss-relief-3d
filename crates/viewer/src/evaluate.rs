@@ -20,13 +20,13 @@ use anyhow::{ensure, Context, Result};
 use glam::{Mat4, Vec2, Vec3};
 use relief_terrain::{Grid, Terrain};
 
-use crate::camera::{Ground, Pose};
 use crate::capture::{self, Readback};
 use crate::headless::{Headless, DEFAULT_FOV_Y};
-use crate::light_rig::LightRig;
-use crate::params::{Ablation, Condition, ShadingParams};
-use crate::path::{CameraPath, Scene};
-use crate::renderer::timers::Pass;
+use relief_render::camera::{Ground, Pose};
+use relief_render::light_rig::LightRig;
+use relief_render::params::{Ablation, Condition, ShadingParams};
+use relief_render::path::{CameraPath, Scene};
+use relief_render::renderer::timers::Pass;
 
 /// Pyramid level at which major ridgelines are detected: 320 m cells.
 const RIDGE_LEVEL: usize = 5;

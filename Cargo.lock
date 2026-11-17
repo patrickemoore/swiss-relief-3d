@@ -2283,6 +2283,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "relief-render"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytemuck",
+ "glam",
+ "half",
+ "log",
+ "pollster",
+ "rayon",
+ "relief-terrain",
+ "serde",
+ "serde_json",
+ "wgpu",
+]
+
+[[package]]
 name = "relief-terrain"
 version = "0.1.0"
 dependencies = [
@@ -2300,7 +2317,6 @@ name = "relief-viewer"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bytemuck",
  "clap",
  "egui",
  "egui-wgpu",
@@ -2312,8 +2328,8 @@ dependencies = [
  "png 0.17.16",
  "pollster",
  "rayon",
+ "relief-render",
  "relief-terrain",
- "serde",
  "serde_json",
  "wgpu",
  "winit",
@@ -2328,8 +2344,8 @@ dependencies = [
  "glam",
  "js-sys",
  "log",
+ "relief-render",
  "relief-terrain",
- "relief-viewer",
  "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-futures",

@@ -56,9 +56,12 @@ export default defineConfig(({ mode }) => {
           rollupOptions: { external: ['react', 'react-dom', 'react/jsx-runtime'] },
           copyPublicDir: false,
         }
-      : // The terrain in public/ is half a gigabyte; the built demo is served
-        // next to a copy of it, or told where else it is with VITE_TERRAIN_URL.
+      : // The terrain in demo/public is half a gigabyte; the built demo is
+        // served next to a copy of it, or told where else it is with
+        // VITE_TERRAIN_URL.
         { outDir: 'dist-demo', copyPublicDir: false },
+    // Static files belong to the demo page, not to the component.
+    publicDir: 'demo/public',
     server: { port: 5173, strictPort: true },
     preview: { port: 5174, strictPort: true },
   };

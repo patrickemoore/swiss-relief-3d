@@ -1,9 +1,9 @@
 // Builds the gazetteer the map labels come from: peaks, lakes, glaciers and
 // towns of Switzerland, from Wikidata, with Swiss LV95 coordinates and a
-// score that says how important each is. Writes crates/viewer/assets/labels.json,
+// score that says how important each is. Writes crates/render/assets/labels.json,
 // which the viewer embeds.
 //
-//     node scripts/labels.mjs
+//     node tools/labels.mjs
 //
 // Peaks are scored by how well known they are (the number of Wikipedias
 // that have an article), their prominence and their height; lakes by area,
@@ -13,7 +13,7 @@ import { writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '../../crates/viewer/assets/labels.json');
+const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '../crates/render/assets/labels.json');
 const ENDPOINT = 'https://query.wikidata.org/sparql';
 const LANGUAGES = 'en,de,fr,it,rm';
 // Fame is counted in articles on these Wikipedias: a count of all sitelinks

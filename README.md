@@ -6,7 +6,7 @@ map is 3D, the light follows the camera, and you can fly anywhere in the
 country at 10 m resolution. Rust + wgpu on the desktop, WebAssembly + WebGPU
 in the browser, with a React component to drop on a page.
 
-![Flying from the whole country to Lake Lucerne and on to the Matterhorn](docs/flight.gif)
+![Flying from the whole country to Lake Lucerne and on to the Matterhorn](docs/flight.webp)
 
 <table>
   <tr>
@@ -93,7 +93,7 @@ table in OKLab. The country is a 655 km square of 10 m cells; the five finest
 levels are cut into 256-texel tiles and only tiles with data are kept (7,021
 at 10 m, 9,578 in all).
 
-**Rendering** (`relief-viewer`). CDLOD quadtree with vertex morphing, heights
+**Rendering** (`relief-render`). CDLOD quadtree with vertex morphing, heights
 sampled from the pyramid so that mesh resolution never changes the shading.
 Around the camera each fine level keeps an 8×8-tile window that wraps around
 its texture; moving costs a row or column of tiles, never a copy. A level is
@@ -119,8 +119,8 @@ Phones skip the 10 m level and use smaller windows. GPUs without
 `float32-filterable` (most phones) get a shader variant that filters by hand.
 
 **Names.** A gazetteer of ~1,000 peaks, lakes, glaciers and towns, built from
-Wikidata ([web/scripts/labels.mjs](web/scripts/labels.mjs)), is laid out
-every frame in [labels.rs](crates/viewer/src/labels.rs): project, drop what
+Wikidata ([tools/labels.mjs](tools/labels.mjs)), is laid out every frame in
+[labels.rs](crates/render/src/labels.rs): project, drop what
 the view is too far out for, drop what the terrain hides (a ray marched
 through the CPU-side heights), place the rest by priority without overlaps,
 fade in and out. The browser draws them as HTML text over the canvas; the
@@ -128,14 +128,24 @@ desktop viewer paints them with egui.
 
 ### Layout
 
+The reusable parts and the demos around them are separate crates and
+folders:
+
 ```
-crates/terrain     dataset formats, pyramid, orientation field, lakes, colour table, web packing
-crates/preprocess  relief-prep: swisstopo STAC download, mosaic, build, country, web
-crates/viewer      relief-viewer: wgpu renderer, camera, labels, egui app, evaluation
-crates/web         the renderer behind a JavaScript API (wasm-bindgen)
-web/               React component, demo page, scripts
-presets/           shading presets (the viewer opens on showcase.json)
-docs/              images for this README
+Reusable
+  crates/terrain     dataset formats, pyramid, orientation field, lakes, colour table, web packing
+  crates/render      the renderer, camera, shading parameters, places and map labels (desktop + wasm)
+  crates/web         relief-render behind a JavaScript API (wasm-bindgen)
+  web/src            the React component (the `swiss-relief` package)
+  tools/             builds the gazetteer that relief-render embeds
+
+Tools and demos
+  crates/preprocess  relief-prep: swisstopo download, mosaic, build, country, web packing
+  crates/viewer      relief-viewer: the desktop window, lab panel, frame dumps, evaluation
+  web/demo           the demo page around the component, with its static files
+  web/scripts        screenshot and recording scripts for the demo
+  presets/           shading presets for the desktop lab
+  docs/              images for this README
 ```
 
 Rasters are stored south row first, positions are local metres from the
@@ -174,8 +184,8 @@ the user study are not done.
 
 Stable Rust. On Windows it builds with the `stable-x86_64-pc-windows-gnullvm`
 toolchain and no Visual Studio: `.cargo/config.toml` links with Rust's own
-LLD and `crates/viewer/build.rs` deals with the few system DLLs the toolchain
-lacks import libraries for. MSVC, Linux and macOS ignore both.
+LLD and the build scripts of `relief-render` and `relief-viewer` deal with the few
+system DLLs the toolchain lacks import libraries for. MSVC, Linux and macOS ignore both.
 
 The browser build needs the `wasm32-unknown-unknown` target, `wasm-bindgen`
 at the version in `Cargo.lock`, and Node; see [web/README.md](web/README.md).

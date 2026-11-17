@@ -5,6 +5,13 @@
 //! a single frame to a PNG and `evaluate` runs the evaluation of the plan's
 //! section 10; neither opens a window.
 
+mod app;
+mod capture;
+mod evaluate;
+mod headless;
+mod session;
+mod ui;
+
 use std::path::{Path, PathBuf};
 
 use anyhow::{bail, Context, Result};
@@ -12,12 +19,11 @@ use clap::{Args, Parser, Subcommand};
 use glam::{Vec2, Vec3};
 use relief_terrain::{synthetic, Terrain};
 
-use relief_viewer::camera::{OrbitView, Pose};
-use relief_viewer::headless::{Headless, DEFAULT_FOV_Y};
-use relief_viewer::light_rig::LightRig;
-use relief_viewer::params::{Ablation, Condition, DebugView, ShadingParams};
-use relief_viewer::path::{self, Scene, Viewpoint};
-use relief_viewer::{app, capture, evaluate};
+use headless::{Headless, DEFAULT_FOV_Y};
+use relief_render::camera::{OrbitView, Pose};
+use relief_render::light_rig::LightRig;
+use relief_render::params::{Ablation, Condition, DebugView, ShadingParams};
+use relief_render::path::{self, Scene, Viewpoint};
 
 /// Side length of the synthetic cone in cells.
 const CONE_SIZE: usize = 1024;

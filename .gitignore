@@ -8,7 +8,7 @@
 /web/node_modules
 /web/dist
 /web/dist-demo
-/web/public/terrain
+/web/demo/public/terrain
 
 # Hosting is specific to one site and kept out of the repository.
 /deploy

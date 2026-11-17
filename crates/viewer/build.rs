@@ -9,6 +9,7 @@
 //! system DLL as usual.
 //!
 //! Every other toolchain finds these libraries on its own and skips this.
+//! `relief-render` carries the same script, for its own test binary.
 
 use std::env;
 use std::fs;
