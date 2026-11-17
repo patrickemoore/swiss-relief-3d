@@ -1,0 +1,26 @@
+[package]
+name = "relief-web"
+description = "The relief viewer as a WebAssembly module for the browser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+# Everything in this crate is compiled for the browser only. On other
+# targets it is an empty library, so that the workspace still builds whole.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+relief-terrain.workspace = true
+relief-viewer = { path = "../viewer" }
+
+console_error_panic_hook = "0.1"
+glam = "0.29"
+js-sys = "0.3"
+log = "0.4"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["HtmlCanvasElement", "Response", "Window", "console"] }
+wgpu = "24"

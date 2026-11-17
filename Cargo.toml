@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = ["crates/terrain", "crates/preprocess", "crates/viewer", "crates/web"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1"
+bytemuck = { version = "1", features = ["derive", "extern_crate_alloc"] }
+clap = { version = "4", features = ["derive"] }
+png = "0.17"
+rayon = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+relief-terrain = { path = "crates/terrain" }
+
+# The viewer is only usable with optimizations, and the preprocessing filters
+# are tight numeric loops, so keep dependencies optimized even in dev builds.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 3

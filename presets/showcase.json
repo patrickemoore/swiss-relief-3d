@@ -1,0 +1,9 @@
+{
+  "light_screen_angle_deg": 60.0,
+  "light_elevation_deg": 30.0,
+  "flat_brightness": 0.68,
+  "contrast": 1.3,
+  "low_contrast": 0.85,
+  "fog_density_per_km": 0.06,
+  "fog_max": 0.5
+}

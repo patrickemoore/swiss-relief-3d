@@ -1,0 +1,6 @@
+# On the LLVM flavour of the Windows GNU toolchain, link with the LLD that
+# ships with Rust, statically. This builds the project without installing
+# Visual Studio or MinGW. Other toolchains (MSVC, Linux, macOS) ignore it.
+[target.x86_64-pc-windows-gnullvm]
+linker = "rust-lld"
+rustflags = ["-C", "linker-flavor=ld.lld", "-C", "target-feature=+crt-static"]

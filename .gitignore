@@ -1,0 +1,17 @@
+/target
+/data
+/captures
+/evaluation
+*.part
+
+/.tools
+/web/node_modules
+/web/dist
+/web/dist-demo
+/web/public/terrain
+
+# Hosting is specific to one site and kept out of the repository.
+/deploy
+
+# The design document is not published.
+/docs/plan.pdf

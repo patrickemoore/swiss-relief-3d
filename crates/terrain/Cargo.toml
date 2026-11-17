@@ -1,0 +1,16 @@
+[package]
+name = "relief-terrain"
+description = "Terrain analysis for Swiss-style relief shading: generalized pyramids, landform orientation and the colour table"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+bytemuck.workspace = true
+# Pure Rust, so the packed format reads the same natively and in a browser.
+miniz_oxide = "0.8"
+png.workspace = true
+rayon.workspace = true
+serde.workspace = true
+serde_json.workspace = true

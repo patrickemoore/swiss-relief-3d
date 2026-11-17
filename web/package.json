@@ -1,0 +1,46 @@
+{
+  "name": "swiss-relief",
+  "version": "0.1.0",
+  "description": "An interactive 3D relief map of Switzerland, shaded in the Swiss manner, as a React component",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/swiss-relief.js",
+  "module": "./dist/swiss-relief.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/swiss-relief.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build --mode library && tsc -p tsconfig.types.json",
+    "build:demo": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "gifenc": "^1.0.3",
+    "playwright-core": "^1.49.0",
+    "pngjs": "^7.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

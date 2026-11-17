@@ -1,0 +1,62 @@
+/* The public page: the map, edge to edge, and a wordmark. */
+
+:root {
+  color-scheme: light dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: #c7d4e3;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* The wordmark sits where the map's own controls leave room, in their style. */
+.demo-mark {
+  --mark-ink: #1c2633;
+  --mark-surface: rgb(255 255 255 / 0.8);
+  --mark-line: rgb(28 38 51 / 0.1);
+  --mark-shadow: 0 1px 2px rgb(20 30 45 / 0.08), 0 8px 24px rgb(20 30 45 / 0.14);
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top));
+  left: calc(14px + env(safe-area-inset-left));
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px 7px 8px;
+  border: 1px solid var(--mark-line);
+  border-radius: 12px;
+  background: var(--mark-surface);
+  box-shadow: var(--mark-shadow);
+  color: var(--mark-ink);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.demo-mark img {
+  display: block;
+  border-radius: 6px;
+}
+
+.demo-mark[data-theme='dark'] {
+  --mark-ink: #edf1f6;
+  --mark-surface: rgb(24 30 39 / 0.74);
+  --mark-line: rgb(255 255 255 / 0.14);
+  --mark-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  .demo-mark[data-theme='auto'] {
+    --mark-ink: #edf1f6;
+    --mark-surface: rgb(24 30 39 / 0.74);
+    --mark-line: rgb(255 255 255 / 0.14);
+    --mark-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.35);
+  }
+}
