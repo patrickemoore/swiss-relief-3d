@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="440" viewBox="0 0 920 440" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+  <rect width="920" height="440" rx="14" fill="#f7f5ef"/>
+
+  <!-- Left: nested windows around the camera, from above -->
+  <text x="32" y="36" font-size="16" font-weight="600" fill="#1c2026">What is resident, from above</text>
+  <text x="32" y="56" fill="#5b616b">Each level keeps an 8 × 8 tile window,</text>
+  <text x="32" y="74" fill="#5b616b">so each reaches twice as far as the one below.</text>
+
+  <!-- windows: centred ahead of the camera, which looks north (up) -->
+  <g transform="translate(60,92)">
+    <rect x="0" y="0" width="320" height="320" fill="#e9e6dd" stroke="#b9b3a3"/>
+    <rect x="80" y="80" width="160" height="160" fill="#dcd8cb" stroke="#b9b3a3"/>
+    <rect x="120" y="120" width="80" height="80" fill="#cfcab9" stroke="#b9b3a3"/>
+    <rect x="140" y="140" width="40" height="40" fill="#bfb9a6" stroke="#b9b3a3"/>
+    <rect x="150" y="150" width="20" height="20" fill="#aaa38e" stroke="#9b958a"/>
+    <!-- camera a little south of the centres: windows sit ahead of it -->
+    <circle cx="160" cy="176" r="4.5" fill="#c8102e"/>
+    <path d="M 160 176 L 128 112 M 160 176 L 192 112" stroke="#c8102e" stroke-width="1.5" fill="none"/>
+    <text x="168" y="190" font-size="11" fill="#c8102e">camera</text>
+    <text x="6" y="314" font-size="11" fill="#5b616b">160 m cells · 164 km</text>
+    <text x="86" y="234" font-size="11" fill="#5b616b">80 m · 82 km</text>
+    <text x="124" y="196" font-size="10" fill="#5b616b">40 m</text>
+  </g>
+  <text x="32" y="430" font-size="12" fill="#5b616b">10 m cells reach 10 km. A tilted camera sees what is in front of it, so the windows sit ahead rather than around.</text>
+
+  <!-- Right: a window wrapping around its texture -->
+  <text x="500" y="36" font-size="16" font-weight="600" fill="#1c2026">How a window moves</text>
+  <text x="500" y="56" fill="#5b616b">A window wraps around its texture:</text>
+  <text x="500" y="74" fill="#5b616b">a step costs one row of tiles, never a copy.</text>
+
+  <g transform="translate(500,104)">
+    <text x="0" y="-4" font-size="11" fill="#5b616b">texture, 8 × 8 tiles</text>
+    <g stroke="#b9b3a3">
+      <rect x="0" y="0" width="160" height="160" fill="#ffffff"/>
+      <path d="M20 0v160M40 0v160M60 0v160M80 0v160M100 0v160M120 0v160M140 0v160M0 20h160M0 40h160M0 60h160M0 80h160M0 100h160M0 120h160M0 140h160"/>
+    </g>
+    <!-- the row that was just recycled: it held the southernmost tiles, now holds the new northern row -->
+    <rect x="0" y="100" width="160" height="20" fill="#c8102e" fill-opacity="0.25" stroke="#c8102e"/>
+    <text x="166" y="114" font-size="11" fill="#c8102e">row rewritten with the new northern tiles</text>
+    <!-- origin marker -->
+    <path d="M 0 120 h 160" stroke="#1c2026" stroke-width="2"/>
+    <text x="166" y="134" font-size="11" fill="#1c2026">seam: the shader reads modulo 8</text>
+  </g>
+
+  <g transform="translate(500,300)">
+    <text x="0" y="0" fill="#1c2026">A level is loaded only once its cells would be a pixel or larger,</text>
+    <text x="0" y="20" fill="#1c2026">and used only where its window is complete. Elsewhere the shader</text>
+    <text x="0" y="40" fill="#1c2026">falls back to the next coarser level, so detail sharpens without</text>
+    <text x="0" y="60" fill="#1c2026">anything popping. A flight loads for where it is going.</text>
+    <line x1="0" y1="84" x2="60" y2="84" stroke="#6b7280" stroke-width="1.5" marker-end="url(#w)"/>
+    <text x="68" y="88" font-size="12" fill="#5b616b">decoded on worker threads, or fetched, a few tiles per frame</text>
+  </g>
+</svg>
