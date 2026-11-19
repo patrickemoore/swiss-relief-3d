@@ -98,6 +98,14 @@ cargo run --release -p relief-prep -- web
 cd web && npm install && npm run dev
 ```
 
+**Hiking trails** (optional, 0.5 GB download of which 17 MB is kept): adds
+the signposted network from swissTLM3D to a dataset, in the viewer's `T`
+and the component's layers menu.
+
+```sh
+cargo run --release -p relief-prep -- trails --data data/switzerland
+```
+
 **No data at all**: `relief-viewer --cone` renders a synthetic cone. Its
 north-west flank should be the bright one.
 
@@ -187,20 +195,39 @@ through the CPU-side heights), places the rest by priority without overlaps,
 and fades them in and out. The browser draws them as HTML text over the
 canvas; the desktop viewer paints them with egui.
 
+### Trails
+
+swissTLM3D, swisstopo's landscape model, classifies every path in the
+country the way the signposts do: hiking (yellow), mountain (white-red-white)
+and alpine (white-blue-white). `relief-prep trails` pulls the road layer out
+of swisstopo's 3.6 GB zip with range requests, keeps the 67,000 km that are
+classified, and writes them as tiles on the same grid as the heights, one set
+per level, simplified to the level's cells and cut so no segment is longer
+than two of them. The whole country is 17 MB.
+
+The renderer drapes them live: each segment is an instanced quad expanded in
+screen space into a capsule of constant width, with its ends set on the
+height pyramid at the level the mesh uses at that distance, so lines sit on
+the surface that is drawn and a ridge hides what lies behind it. Casings go
+down before cores, so joints stay clean. Yellow trails come in at about
+10 m per pixel, the mountain and alpine ones from 45 m. The tiles follow the
+terrain's streaming windows, and a tile is drawn only where no finer tile
+covers its ground.
+
 ## Repository layout
 
 The reusable parts and the demos around them are kept apart.
 
 ```
 Reusable
-  crates/terrain     dataset formats, pyramid, orientation field, lakes, colour table, web packing
+  crates/terrain     dataset formats, pyramid, orientation field, lakes, colour table, trails, web packing
   crates/render      renderer, camera, shading parameters, places, labels (desktop and wasm)
   crates/web         relief-render behind a JavaScript API (wasm-bindgen)
   web/src            the React component, published as the `swiss-relief` package
   tools/             builds the gazetteer that relief-render embeds
 
 Tools and demos
-  crates/preprocess  relief-prep: swisstopo download, mosaic, build, country, web packing
+  crates/preprocess  relief-prep: swisstopo download, mosaic, build, country, trails, web packing
   crates/viewer      relief-viewer: the desktop window, lab panel, frame dumps, evaluation
   web/demo           the demo page around the component, with its static files
   web/scripts        screenshot and recording scripts for the demo
@@ -307,6 +334,8 @@ builds without Rust.
 
 ## Data and licence
 
+Trails: [swissTLM3D](https://www.swisstopo.admin.ch/en/landscape-model-swisstlm3d),
+© swisstopo, open data with attribution.
 Elevation: [swissALTI3D](https://www.swisstopo.admin.ch/en/height-model-swissalti3d),
 © swisstopo, open data with attribution. Place names: Wikidata, CC0. Neither
 is in the repository.

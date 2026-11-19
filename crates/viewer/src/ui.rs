@@ -93,6 +93,7 @@ fn place_bar(ctx: &Context, session: &mut Session) {
                     ui.separator();
                     ui.toggle_value(&mut session.split_enabled, "Compare").on_hover_text("Two looks side by side (C)");
                     ui.toggle_value(&mut session.show_labels, "Names").on_hover_text("Peaks, lakes and towns (L)");
+                    ui.toggle_value(&mut session.show_trails, "Trails").on_hover_text("Hiking trails (T)");
                     ui.toggle_value(&mut session.show_panel, "Lab").on_hover_text("Every parameter of the method (F1)");
                 });
             });

@@ -84,6 +84,8 @@ pub struct Session {
     /// Names of peaks, lakes and towns, laid out over the view each frame.
     pub labels: Labels,
     pub show_labels: bool,
+    /// Hiking trails, where the dataset has them.
+    pub show_trails: bool,
 }
 
 impl Session {
@@ -134,6 +136,7 @@ impl Session {
             show_panel: false,
             labels: Labels::builtin(terrain.meta.origin_lv95, terrain.meta.data_region()),
             show_labels: true,
+            show_trails: true,
         })
     }
 

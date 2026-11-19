@@ -23,6 +23,7 @@ use relief_render::camera::{CameraInput, CameraMode};
 use relief_render::gpu::Gpu;
 use relief_render::params::Condition;
 use relief_render::renderer::timers::Pass;
+use relief_render::renderer::trails::TrailStyle;
 use relief_render::renderer::{FrameInput, Renderer, SideInput};
 
 /// Directory frame dumps are written to.
@@ -275,6 +276,7 @@ impl Viewer {
             KeyCode::F12 => session.capture_requested = true,
             KeyCode::KeyC => session.split_enabled = !session.split_enabled,
             KeyCode::KeyL => session.show_labels = !session.show_labels,
+            KeyCode::KeyT => session.show_trails = !session.show_trails,
             KeyCode::Escape => session.stop_playback(),
             KeyCode::Tab => {
                 let mode = match session.controller.mode {
@@ -363,6 +365,10 @@ impl Viewer {
             split: self.session.split(),
             pixels_per_quad: self.session.pixels_per_quad,
             tile_budget: Some(TILES_PER_FRAME),
+            trails: self
+                .session
+                .show_trails
+                .then(|| TrailStyle { pixel_ratio: self.window.scale_factor() as f32, ..TrailStyle::default() }),
         };
 
         let capture = std::mem::take(&mut self.session.capture_requested).then(|| {

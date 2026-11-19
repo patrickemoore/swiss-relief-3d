@@ -15,6 +15,7 @@ use crate::grid::Grid;
 use crate::lut::Lut;
 use crate::pack::{self, TileIndex};
 use crate::tiled;
+use crate::trails::{self, Trails};
 use crate::water::halve_mask;
 
 /// Texels along one side of a tile.
@@ -68,19 +69,23 @@ pub struct Terrain {
     pub tiles: Arc<dyn TileSource>,
     /// Which tiles exist, if the terrain knows without asking for them.
     pub index: Option<TileIndex>,
+    /// Hiking trails, where the dataset has them.
+    pub trails: Option<Arc<Trails>>,
 }
 
 impl Terrain {
     /// Opens a dataset directory of either kind.
     pub fn open(dir: &Path) -> Result<Self> {
         let meta = read_meta(dir)?;
-        if meta.packed.is_some() {
+        let mut terrain = if meta.packed.is_some() {
             pack::open(dir, meta)
         } else if meta.tiled {
             tiled::open(dir, meta)
         } else {
             Ok(Dataset::load_with(dir, meta)?.into())
-        }
+        }?;
+        terrain.trails = trails::open(dir, &terrain.meta)?.map(Arc::new);
+        Ok(terrain)
     }
 
     /// Cell size of a pyramid level in metres.
@@ -249,6 +254,7 @@ impl From<Dataset> for Terrain {
             lut,
             tiles: Arc::new(MemoryTiles { heights: [plain, accentuated], water: water_levels }),
             index: None,
+            trails: None,
             meta,
         }
     }

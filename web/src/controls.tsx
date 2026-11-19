@@ -141,12 +141,16 @@ export interface LookOptions {
   followsView: boolean;
   /** Vertical exaggeration of the terrain. */
   height: number;
+  /** Hiking trails, where the terrain has them. */
+  trails: boolean;
 }
 
 interface TopBarProps {
   comparing: boolean;
   menuOpen: boolean;
   options: LookOptions;
+  /** Whether the terrain has hiking trails to switch on and off. */
+  hasTrails: boolean;
   onCompare: (on: boolean) => void;
   onMenu: (open: boolean) => void;
   onOptions: (options: LookOptions) => void;
@@ -165,7 +169,7 @@ function Switch({ label, hint, on, onChange }: { label: string; hint?: string; o
   );
 }
 
-export function TopBar({ comparing, menuOpen, options, onCompare, onMenu, onOptions }: TopBarProps) {
+export function TopBar({ comparing, menuOpen, options, hasTrails, onCompare, onMenu, onOptions }: TopBarProps) {
   const menu = useRef<HTMLDivElement>(null);
   // A click anywhere else, or Escape, closes the menu.
   useEffect(() => {
@@ -202,6 +206,14 @@ export function TopBar({ comparing, menuOpen, options, onCompare, onMenu, onOpti
           <Switch label="Colour" hint="Tints by elevation" on={options.color} onChange={(color) => set({ color })} />
           <Switch label="Haze" hint="Fades the lowlands and the distance" on={options.fog} onChange={(fog) => set({ fog })} />
           <Switch label="Lakes" on={options.water} onChange={(water) => set({ water })} />
+          {hasTrails && (
+            <Switch
+              label="Hiking trails"
+              hint="Yellow, mountain red, alpine blue, as signposted"
+              on={options.trails}
+              onChange={(trails) => set({ trails })}
+            />
+          )}
           <Switch
             label="Light follows the view"
             hint="Always from the upper left, as on a map"

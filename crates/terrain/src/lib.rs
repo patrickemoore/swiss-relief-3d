@@ -30,6 +30,7 @@ pub mod stats;
 pub mod synthetic;
 pub mod terrain;
 pub mod tiled;
+pub mod trails;
 pub mod water;
 
 pub use dataset::{BuildOptions, Dataset, Meta};

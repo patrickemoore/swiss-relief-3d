@@ -41,22 +41,26 @@ export class Viewer {
      * device pixels; `layout_side` is its longer side in CSS pixels, which
      * tells a phone from a desktop. `meta` and `base` are the contents of the packed
      * terrain's `meta.json` and `base.bin`, and `data_url` is where its
-     * tiles are served from.
+     * tiles are served from. `trails_index` is the contents of
+     * `trails/index.bin` where the terrain has hiking trails.
      * @param {HTMLCanvasElement} canvas
      * @param {string} data_url
      * @param {string} meta
      * @param {Uint8Array} base
      * @param {number} layout_side
+     * @param {Uint8Array | null} [trails_index]
      * @returns {Promise<Viewer>}
      */
-    static create(canvas, data_url, meta, base, layout_side) {
+    static create(canvas, data_url, meta, base, layout_side, trails_index) {
         const ptr0 = passStringToWasm0(data_url, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passStringToWasm0(meta, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         const ptr2 = passArray8ToWasm0(base, wasm.__wbindgen_malloc);
         const len2 = WASM_VECTOR_LEN;
-        const ret = wasm.viewer_create(canvas, ptr0, len0, ptr1, len1, ptr2, len2, layout_side);
+        var ptr3 = isLikeNone(trails_index) ? 0 : passArray8ToWasm0(trails_index, wasm.__wbindgen_malloc);
+        var len3 = WASM_VECTOR_LEN;
+        const ret = wasm.viewer_create(canvas, ptr0, len0, ptr1, len1, ptr2, len2, layout_side, ptr3, len3);
         return ret;
     }
     /**
@@ -113,6 +117,14 @@ export class Viewer {
      */
     go_home(fly) {
         wasm.viewer_go_home(this.__wbg_ptr, fly);
+    }
+    /**
+     * Whether the terrain came with hiking trails.
+     * @returns {boolean}
+     */
+    has_trails() {
+        const ret = wasm.viewer_has_trails(this.__wbg_ptr);
+        return ret !== 0;
     }
     /**
      * The names placed over the last frame, as JSON: see `labels::Placed`.
@@ -263,6 +275,13 @@ export class Viewer {
      */
     set_tour(on) {
         wasm.viewer_set_tour(this.__wbg_ptr, on);
+    }
+    /**
+     * Shows or hides the hiking trails.
+     * @param {boolean} on
+     */
+    set_trails(on) {
+        wasm.viewer_set_trails(this.__wbg_ptr, on);
     }
     /**
      * The state of the view as JSON, for a compass, a scale bar and such.
@@ -1273,7 +1292,7 @@ function __wbg_get_imports() {
             arg0.writeTexture(arg1, arg2, arg3, arg4);
         }, arguments); },
         __wbindgen_generic_0000000000000001: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 316, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 330, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen_b07697265e4f617b___convert__closures_____invoke___wasm_bindgen_b07697265e4f617b___JsValue__core_608f92abc48d28da___result__Result_____wasm_bindgen_b07697265e4f617b___JsError___true_);
             return ret;
         },

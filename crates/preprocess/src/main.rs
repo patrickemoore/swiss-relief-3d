@@ -11,6 +11,8 @@ mod geotiff;
 mod mosaic;
 mod region;
 mod stac;
+mod trails;
+mod zipped;
 
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -37,6 +39,8 @@ enum Command {
     Country(CountryArgs),
     /// Pack a dataset into the compact form the web viewer streams
     Web(WebArgs),
+    /// Add the hiking trails of swissTLM3D to a dataset
+    Trails(TrailArgs),
     /// Build a synthetic cone, the test target for gradient signs
     Synth {
         #[arg(long, default_value = "data/cone")]
@@ -52,6 +56,19 @@ enum Command {
     },
     /// Compare two PNG images of equal size with SSIM and correlation
     Compare { a: PathBuf, b: PathBuf },
+}
+
+#[derive(Args)]
+struct TrailArgs {
+    /// Dataset directory to add the trails to
+    #[arg(long, default_value = "data/switzerland")]
+    data: PathBuf,
+    /// Where the swissTLM3D layer is kept once fetched
+    #[arg(long, default_value = "data/swisstlm3d")]
+    cache: PathBuf,
+    /// The swissTLM3D release to fetch
+    #[arg(long, default_value = trails::DEFAULT_RELEASE)]
+    release: String,
 }
 
 #[derive(Args)]
@@ -129,6 +146,7 @@ fn main() -> Result<()> {
         Command::Build(args) => build(&args),
         Command::Country(args) => build_country(&args),
         Command::Web(args) => pack_for_web(&args),
+        Command::Trails(args) => trails::build(&args.data, &args.cache, &args.release),
         Command::Synth { out, size } => save(&synthetic::cone_dataset(size)?, &out),
         Command::Lut { dataset } => {
             let path = dataset.join("lut.png");
@@ -150,6 +168,12 @@ fn pack_for_web(args: &WebArgs) -> Result<()> {
         Terrain::open(&args.data).with_context(|| format!("loading the dataset in {}", args.data.display()))?;
     let started = Instant::now();
     let report = pack::export(&terrain, &args.out, args.finest)?;
+    // Trails come along as they are: their tiles are already compact.
+    if terrain.trails.is_some() {
+        let (from, to) =
+            (args.data.join(relief_terrain::trails::TRAILS_DIR), args.out.join(relief_terrain::trails::TRAILS_DIR));
+        copy_dir(&from, &to).with_context(|| format!("copying {} to {}", from.display(), to.display()))?;
+    }
 
     const MEGABYTE: f64 = 1_048_576.0;
     println!("wrote {} in {:.1} s", args.out.display(), started.elapsed().as_secs_f32());
@@ -253,5 +277,23 @@ fn save(dataset: &Dataset, dir: &Path) -> Result<()> {
         meta.elevation.min, meta.elevation.max, meta.elevation.p5, meta.elevation.p95
     );
     println!("  lakes cover {:.1} km2", lake_cells as f32 * meta.cell_size * meta.cell_size / 1e6);
+    Ok(())
+}
+
+/// Copies a directory tree, replacing what is at `to`.
+fn copy_dir(from: &Path, to: &Path) -> Result<()> {
+    if to.exists() {
+        std::fs::remove_dir_all(to)?;
+    }
+    std::fs::create_dir_all(to)?;
+    for entry in std::fs::read_dir(from)? {
+        let entry = entry?;
+        let target = to.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            copy_dir(&entry.path(), &target)?;
+        } else {
+            std::fs::copy(entry.path(), target)?;
+        }
+    }
     Ok(())
 }

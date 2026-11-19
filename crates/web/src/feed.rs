@@ -30,7 +30,7 @@ fn js_error(value: JsValue) -> anyhow::Error {
 }
 
 /// The bytes at a URL.
-async fn fetch(url: &str) -> Result<Vec<u8>> {
+pub(crate) async fn fetch(url: &str) -> Result<Vec<u8>> {
     let window = web_sys::window().ok_or_else(|| anyhow!("not running in a page"))?;
     let response: web_sys::Response =
         JsFuture::from(window.fetch_with_str(url)).await.map_err(js_error)?.dyn_into().map_err(js_error)?;

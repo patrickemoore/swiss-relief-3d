@@ -29,6 +29,7 @@ project at `web/` (`npm install ../swiss-relief-3d/web`, or `npm link`).
 | Component JS + CSS | 22 KB gz + 3 KB | your bundle |
 | `wasm/relief_web_bg.wasm` | 1.2 MB (300 KB compressed) | fetched once per page |
 | Terrain | 2.6 MB up front, then tiles on demand | static files at `dataUrl` |
+| Hiking trails (optional) | 17 MB in all, a few KB per tile on demand | `dataUrl/trails` |
 
 The terrain directory is produced by `relief-prep web` (see the repository
 README) and lands in `demo/public/terrain`. Put it on any static host or CDN and
@@ -74,12 +75,13 @@ const SwissRelief = dynamic(() => import('swiss-relief').then((m) => m.SwissReli
 | `controls` | `true` | Show the on-map controls. Mouse, touch and keyboard work regardless. |
 | `cooperativeGestures` | `true` | Wheel zooms only with Ctrl/⌘, one finger scrolls the page. Off in fullscreen. |
 | `labels` | `true` | Names of peaks, lakes, glaciers and towns. |
+| `trails` | `true` | The hiking trails, where the terrain was packed with them; the visitor can switch them in the layers menu. |
 | `readout` | `false` | Coordinates and elevation under the cursor, bottom left. |
 | `hints` | `true` | The one-line "drag to move" hint when the map opens. |
 | `poster` | | Image shown while loading, and instead of the map where WebGPU is missing. |
 | `maxPixelRatio` | `2` | Cap on device pixels per CSS pixel. |
 | `theme` | `'auto'` | `'light'`, `'dark'` or follow the system. |
-| `attribution` | `'Terrain © swisstopo'` | swisstopo's terms require the credit. |
+| `attribution` | `'Terrain © swisstopo'`, or `'Terrain and trails © swisstopo'` with trails | swisstopo's terms require the credit. |
 | `onReady`, `onError` | | Get a handle to the map, or the reason it failed. |
 
 A `poster` is worth having; the demo uses `demo/public/poster.jpg`, rendered with

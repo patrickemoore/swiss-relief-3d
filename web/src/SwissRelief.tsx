@@ -51,6 +51,8 @@ export interface SwissReliefProps {
   hints?: boolean;
   /** Name peaks, lakes, glaciers and towns on the map. Default true. */
   labels?: boolean;
+  /** Draw the hiking trails, where the terrain has them. Default true. */
+  trails?: boolean;
   onReady?: (map: SwissReliefHandle) => void;
   onError?: (error: Error) => void;
 }
@@ -74,7 +76,7 @@ type Status =
 
 type Hint = 'intro' | 'wheel' | 'touch' | null;
 
-const DEFAULT_OPTIONS: LookOptions = { color: true, fog: true, water: true, followsView: true, height: 1.2 };
+const DEFAULT_OPTIONS: LookOptions = { color: true, fog: true, water: true, followsView: true, height: 1.2, trails: true };
 /** A view steeper than this, in radians below the horizon, counts as a map. */
 const MAP_PITCH = 1.45;
 /** How often the interface catches up with the view, in milliseconds. */
@@ -135,10 +137,11 @@ export const SwissRelief = forwardRef<SwissReliefHandle, SwissReliefProps>(funct
     poster,
     maxPixelRatio = 2,
     theme = 'auto',
-    attribution = 'Terrain © swisstopo',
+    attribution,
     readout = false,
     hints = true,
     labels = true,
+    trails = true,
     onReady,
     onError,
   } = props;
@@ -153,6 +156,7 @@ export const SwissRelief = forwardRef<SwissReliefHandle, SwissReliefProps>(funct
 
   const [status, setStatus] = useState<Status>({ kind: 'loading', progress: 0 });
   const [places, setPlaces] = useState<Place[]>([]);
+  const [hasTrails, setHasTrails] = useState(false);
   const [view, setView] = useState<ViewState | null>(null);
   const [atHome, setAtHome] = useState(true);
   const [comparing, setComparing] = useState(startComparing);
@@ -245,6 +249,7 @@ export const SwissRelief = forwardRef<SwissReliefHandle, SwissReliefProps>(funct
         // For looking at a running map from the console.
         if (import.meta.env?.DEV) Object.assign(window, { swissRelief: made });
         setPlaces(made.places);
+        setHasTrails(made.hasTrails);
         setStatus({ kind: 'ready', shown: false });
 
         const calm = prefersReducedMotion();
@@ -304,6 +309,12 @@ export const SwissRelief = forwardRef<SwissReliefHandle, SwissReliefProps>(funct
       shading_exaggeration: options.height,
     });
   }, [ready, options]);
+
+  // The trails prop sets the switch; the switch then has the last word.
+  useEffect(() => setOptions((now) => ({ ...now, trails })), [trails]);
+  useEffect(() => {
+    if (ready) engine.current?.setTrails(options.trails);
+  }, [ready, options.trails]);
 
   // Hints go away by themselves.
   useEffect(() => {
@@ -372,6 +383,7 @@ export const SwissRelief = forwardRef<SwissReliefHandle, SwissReliefProps>(funct
             comparing={comparing}
             menuOpen={menuOpen}
             options={options}
+            hasTrails={hasTrails}
             onCompare={setComparing}
             onMenu={setMenuOpen}
             onOptions={setOptions}
@@ -417,7 +429,7 @@ export const SwissRelief = forwardRef<SwissReliefHandle, SwissReliefProps>(funct
             {view && <ScaleBar metresPerPixel={view.metresPerPixel} />}
             {view && readout && <span className="sr-readout">{describe(view)}</span>}
             <span className="sr-credit" data-streaming={!!view && view.loading > 0}>
-              {attribution}
+              {attribution ?? (hasTrails ? 'Terrain and trails © swisstopo' : 'Terrain © swisstopo')}
             </span>
           </div>
           {message && (

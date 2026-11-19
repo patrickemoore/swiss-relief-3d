@@ -175,6 +175,7 @@ pub fn build(input: TiledInput, options: &BuildOptions, dir: &Path) -> Result<Me
         data_region: Some(data_region),
         view_region,
         packed: None,
+        trails: None,
     };
     // Written last, so a directory with a meta file is a complete dataset.
     write_meta(dir, &meta)?;
@@ -342,6 +343,7 @@ pub(crate) fn open(dir: &Path, meta: Meta) -> Result<Terrain> {
         lut: Lut::load_png(&dir.join("lut.png"))?,
         tiles: Arc::new(DiskTiles { dir: dir.to_owned() }),
         index: None,
+        trails: None,
         meta,
     })
 }

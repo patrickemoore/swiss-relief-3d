@@ -84,6 +84,40 @@ pub struct TileIndex {
 }
 
 impl TileIndex {
+    /// From, per level, the columns, rows and one bit per tile, row by row.
+    pub fn new(levels: Vec<(usize, usize, Vec<u8>)>) -> Self {
+        Self { levels }
+    }
+
+    /// The index as a file: a level count, then per level the columns and
+    /// rows as 32-bit integers and the bits.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes = vec![self.levels.len() as u8];
+        for (columns, rows, bits) in &self.levels {
+            bytes.extend_from_slice(&(*columns as u32).to_le_bytes());
+            bytes.extend_from_slice(&(*rows as u32).to_le_bytes());
+            bytes.extend_from_slice(bits);
+        }
+        bytes
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        ensure!(!bytes.is_empty(), "an empty tile index");
+        let mut levels = Vec::with_capacity(bytes[0] as usize);
+        let mut at = 1;
+        for _ in 0..bytes[0] {
+            ensure!(at + 8 <= bytes.len(), "a tile index is cut short");
+            let word = |from: usize| u32::from_le_bytes(bytes[from..from + 4].try_into().expect("four bytes")) as usize;
+            let (columns, rows) = (word(at), word(at + 4));
+            let length = (columns * rows).div_ceil(8);
+            at += 8;
+            ensure!(at + length <= bytes.len(), "a tile index is cut short");
+            levels.push((columns, rows, bytes[at..at + length].to_vec()));
+            at += length;
+        }
+        Ok(Self { levels })
+    }
+
     pub fn has(&self, level: usize, x: usize, y: usize) -> bool {
         let Some((columns, rows, bits)) = self.levels.get(level) else { return false };
         let index = y * columns + x;
@@ -379,6 +413,7 @@ pub fn unpack(meta: Meta, base: &[u8], tiles: Arc<dyn TileSource>) -> Result<Ter
         lut,
         tiles,
         index: Some(TileIndex { levels }),
+        trails: None,
     })
 }
 

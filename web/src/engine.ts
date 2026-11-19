@@ -229,6 +229,13 @@ export class Engine {
       download(`${dataUrl}/base.bin`, progress),
     ]);
     progress(1);
+    // A terrain with hiking trails has an index of their tiles next to it.
+    let trailsIndex: Uint8Array | undefined;
+    if ((JSON.parse(meta) as { trails?: unknown }).trails) {
+      const response = await fetch(`${dataUrl}/trails/index.bin`);
+      if (response.ok) trailsIndex = new Uint8Array(await response.arrayBuffer());
+      else console.warn(`[swiss-relief] ${dataUrl}/trails/index.bin: HTTP ${response.status}; no trails`);
+    }
 
     // The viewer reads the canvas's size when it opens.
     const ratio = Math.min(window.devicePixelRatio || 1, options.maxPixelRatio);
@@ -236,7 +243,7 @@ export class Engine {
     canvas.width = Math.max(1, Math.round(box.width * ratio));
     canvas.height = Math.max(1, Math.round(box.height * ratio));
     const layoutSide = Math.round(Math.max(box.width, box.height));
-    const viewer = await Viewer.create(canvas, new URL(dataUrl, document.baseURI).href, meta, base, layoutSide);
+    const viewer = await Viewer.create(canvas, new URL(dataUrl, document.baseURI).href, meta, base, layoutSide, trailsIndex);
     return new Engine(canvas, viewer, options);
   }
 
@@ -294,6 +301,16 @@ export class Engine {
   /** Changes some parameters of a look; see the viewer's presets for names. */
   patchLook(look: Look, patch: Record<string, unknown>): void {
     this.viewer.patch_look(look, JSON.stringify(patch));
+  }
+
+  /** Whether the terrain came with hiking trails. */
+  get hasTrails(): boolean {
+    return this.viewer.has_trails();
+  }
+
+  /** Shows or hides the hiking trails. */
+  setTrails(on: boolean): void {
+    this.viewer.set_trails(on);
   }
 
   /** Megabytes of terrain tiles downloaded so far. */

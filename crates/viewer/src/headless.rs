@@ -8,6 +8,7 @@ use relief_render::camera::{Ground, Pose};
 use relief_render::gpu::Gpu;
 use relief_render::light_rig::LightRig;
 use relief_render::params::ShadingParams;
+use relief_render::renderer::trails::TrailStyle;
 use relief_render::renderer::{FrameInput, Renderer, SideInput};
 
 pub use relief_render::camera::DEFAULT_FOV_Y;
@@ -26,6 +27,9 @@ pub struct Headless {
     pub ground: Ground,
     output: OffscreenTarget,
     pub size: [u32; 2],
+    /// Hiking trails, drawn with this style; `None` leaves them out, as the
+    /// evaluation does.
+    pub trails: Option<TrailStyle>,
 }
 
 impl Headless {
@@ -33,7 +37,7 @@ impl Headless {
         let gpu = Gpu::new(&Gpu::instance(), None)?;
         let renderer = Renderer::new(&gpu, terrain, OUTPUT_FORMAT, size);
         let output = OffscreenTarget::new(&gpu.device, OUTPUT_FORMAT, size);
-        Ok(Self { gpu, renderer, ground: Ground::new(terrain), output, size })
+        Ok(Self { gpu, renderer, ground: Ground::new(terrain), output, size, trails: None })
     }
 
     /// Renders one frame, advancing each light rig by `dt` seconds.
@@ -65,6 +69,7 @@ impl Headless {
             pixels_per_quad: DEFAULT_PIXELS_PER_QUAD,
             detail_for: None,
             tile_budget: None,
+            trails: self.trails,
         };
         let mut encoder = self.gpu.device.create_command_encoder(&Default::default());
         self.renderer.render(&self.gpu, &mut encoder, &self.output.view, &input)?;

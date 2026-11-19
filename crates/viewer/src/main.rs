@@ -24,6 +24,7 @@ use relief_render::camera::{OrbitView, Pose};
 use relief_render::light_rig::LightRig;
 use relief_render::params::{Ablation, Condition, DebugView, ShadingParams};
 use relief_render::path::{self, Scene, Viewpoint};
+use relief_render::renderer::trails::TrailStyle;
 
 /// Side length of the synthetic cone in cells.
 const CONE_SIZE: usize = 1024;
@@ -87,6 +88,9 @@ struct SnapshotArgs {
     /// Debug view number (1 to 13)
     #[arg(long)]
     debug: Option<u32>,
+    /// Draw the hiking trails, if the dataset has them
+    #[arg(long)]
+    trails: bool,
     #[arg(long, default_value_t = 1920)]
     width: u32,
     #[arg(long, default_value_t = 1080)]
@@ -185,6 +189,7 @@ fn snapshot(terrain: &Terrain, args: &SnapshotArgs) -> Result<()> {
     let compare = args.compare.map(condition_params).transpose()?;
 
     let mut headless = Headless::new(terrain, [args.width, args.height])?;
+    headless.trails = args.trails.then(TrailStyle::default);
     // The evaluation viewpoints, then the named places.
     let z_scale = params.geometry_exaggeration;
     let mut viewpoints = Scene::new(terrain, &headless.ground, z_scale, DEFAULT_FOV_Y)?.viewpoints();

@@ -66,6 +66,9 @@ pub struct Meta {
     /// Set if the terrain is packed for the web; see [`crate::pack`].
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub packed: Option<PackInfo>,
+    /// Hiking trails, if `relief-prep trails` has added them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trails: Option<crate::trails::TrailsInfo>,
 }
 
 impl Meta {
@@ -140,6 +143,7 @@ impl Dataset {
             data_region: None,
             view_region: None,
             packed: None,
+            trails: None,
         };
         Ok(Self { meta, plain, accentuated, orientation, water, lut: Lut::swiss_default(DEFAULT_FLAT_BRIGHTNESS) })
     }
@@ -182,12 +186,12 @@ impl Dataset {
     }
 }
 
-pub(crate) fn write_meta(dir: &Path, meta: &Meta) -> Result<()> {
+pub fn write_meta(dir: &Path, meta: &Meta) -> Result<()> {
     let path = dir.join("meta.json");
     fs::write(&path, serde_json::to_string_pretty(meta)?).with_context(|| format!("writing {}", path.display()))
 }
 
-pub(crate) fn read_meta(dir: &Path) -> Result<Meta> {
+pub fn read_meta(dir: &Path) -> Result<Meta> {
     let path = dir.join("meta.json");
     let text =
         fs::read_to_string(&path).with_context(|| format!("reading {} (run relief-prep first)", path.display()))?;

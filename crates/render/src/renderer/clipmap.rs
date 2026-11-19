@@ -68,15 +68,15 @@ pub type TileKey = (usize, [i32; 2]);
 
 /// A rectangle of tiles; `max` is exclusive.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct TileRect {
-    min: [i32; 2],
-    max: [i32; 2],
+pub struct TileRect {
+    pub min: [i32; 2],
+    pub max: [i32; 2],
 }
 
 impl TileRect {
-    const EMPTY: Self = Self { min: [0, 0], max: [0, 0] };
+    pub const EMPTY: Self = Self { min: [0, 0], max: [0, 0] };
 
-    fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.min[0] >= self.max[0] || self.min[1] >= self.max[1]
     }
 
@@ -92,7 +92,11 @@ impl TileRect {
         }
     }
 
-    fn tiles(&self) -> impl Iterator<Item = [i32; 2]> + '_ {
+    pub fn contains(&self, tile: [i32; 2]) -> bool {
+        (self.min[0]..self.max[0]).contains(&tile[0]) && (self.min[1]..self.max[1]).contains(&tile[1])
+    }
+
+    pub fn tiles(&self) -> impl Iterator<Item = [i32; 2]> + '_ {
         (self.min[1]..self.max[1]).flat_map(move |y| (self.min[0]..self.max[0]).map(move |x| [x, y]))
     }
 }
@@ -539,6 +543,11 @@ impl Clipmap {
     /// drawn again if so.
     pub fn take_changed(&mut self) -> bool {
         std::mem::take(&mut self.changed)
+    }
+
+    /// For every streamed level, the tiles its window holds or is loading.
+    pub fn targets(&self) -> [TileRect; TILED_LEVELS] {
+        std::array::from_fn(|level| self.windows[level].target)
     }
 
     /// Tiles still to be uploaded before every window is complete.

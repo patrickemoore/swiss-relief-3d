@@ -12,6 +12,7 @@
 #![cfg(target_arch = "wasm32")]
 
 mod feed;
+mod trail_feed;
 
 use std::sync::Arc;
 
@@ -22,12 +23,14 @@ use relief_render::explore::{opening_view_within, Explorer};
 use relief_render::gpu::Gpu;
 use relief_render::labels::{Labels, View as LabelView};
 use relief_render::params::{Condition, ShadingParams};
+use relief_render::renderer::trails::{TrailFeed, TrailStyle};
 use relief_render::renderer::{FrameInput, Renderer, SideInput, DEFAULT_PIXELS_PER_QUAD};
-use relief_terrain::pack::{self, NoTiles};
+use relief_terrain::pack::{self, NoTiles, TileIndex};
 use relief_terrain::{lv95, Meta};
 use wasm_bindgen::prelude::*;
 
 use crate::feed::{FeedMonitor, FetchFeed};
+use crate::trail_feed::FetchTrailFeed;
 
 /// Tiles unpacked and taken in per frame at most. Unpacking one takes a
 /// couple of milliseconds on the page's only thread.
@@ -146,6 +149,9 @@ pub struct Viewer {
     /// Device pixels per CSS pixel, which sets the size of the names.
     pixel_ratio: f32,
     labels: Labels,
+    /// Whether the terrain came with hiking trails, and whether to draw them.
+    has_trails: bool,
+    trails_on: bool,
 }
 
 #[wasm_bindgen]
@@ -154,15 +160,17 @@ impl Viewer {
     /// device pixels; `layout_side` is its longer side in CSS pixels, which
     /// tells a phone from a desktop. `meta` and `base` are the contents of the packed
     /// terrain's `meta.json` and `base.bin`, and `data_url` is where its
-    /// tiles are served from.
+    /// tiles are served from. `trails_index` is the contents of
+    /// `trails/index.bin` where the terrain has hiking trails.
     pub async fn create(
         canvas: web_sys::HtmlCanvasElement,
         data_url: String,
         meta: String,
         base: Vec<u8>,
         layout_side: u32,
+        trails_index: Option<Vec<u8>>,
     ) -> Result<Viewer, JsError> {
-        Self::open(canvas, &data_url, &meta, &base, layout_side).await.map_err(to_js)
+        Self::open(canvas, &data_url, &meta, &base, layout_side, trails_index.as_deref()).await.map_err(to_js)
     }
 
     async fn open(
@@ -171,6 +179,7 @@ impl Viewer {
         meta: &str,
         base: &[u8],
         layout_side: u32,
+        trails_index: Option<&[u8]>,
     ) -> Result<Self> {
         let size = [canvas.width().max(1), canvas.height().max(1)];
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
@@ -217,7 +226,17 @@ impl Viewer {
         let ground = Ground::with_tiles(&terrain, ground_level, feed.ground());
 
         let reach = REACH_TILES[(!small) as usize];
-        let renderer = Renderer::with_feed(&gpu, &terrain, Box::new(feed), reach, format, size);
+        // Trails come with the terrain, if the page fetched their index.
+        let trails = match (trails_index, terrain.meta.trails.is_some()) {
+            (Some(bytes), true) => {
+                let index = TileIndex::from_bytes(bytes).context("reading the trail index")?;
+                let feed: Box<dyn TrailFeed> = Box::new(FetchTrailFeed::new(data_url, terrain.meta.cell_size));
+                Some((index, feed))
+            }
+            _ => None,
+        };
+        let has_trails = trails.is_some();
+        let renderer = Renderer::with_feed(&gpu, &terrain, Box::new(feed), reach, trails, format, size);
         let explorer = Explorer::new(&terrain, ground, size[0] as f32 / size[1] as f32);
         let labels = Labels::builtin(terrain.meta.origin_lv95, terrain.meta.data_region());
         Ok(Self {
@@ -236,6 +255,8 @@ impl Viewer {
             settled_frames: 0,
             pixel_ratio: 1.0,
             labels,
+            has_trails,
+            trails_on: true,
         })
     }
 
@@ -243,6 +264,20 @@ impl Viewer {
     /// keep their size on the page.
     pub fn set_pixel_ratio(&mut self, ratio: f32) {
         self.pixel_ratio = ratio.max(0.25);
+    }
+
+    /// Whether the terrain came with hiking trails.
+    pub fn has_trails(&self) -> bool {
+        self.has_trails
+    }
+
+    /// Shows or hides the hiking trails.
+    pub fn set_trails(&mut self, on: bool) {
+        if self.trails_on != on {
+            self.trails_on = on;
+            self.explorer.touch();
+            self.settled_frames = 0;
+        }
     }
 
     /// The names placed over the last frame, as JSON: see `labels::Placed`.
@@ -323,6 +358,8 @@ impl Viewer {
             split: self.explorer.compare(),
             pixels_per_quad: DEFAULT_PIXELS_PER_QUAD,
             tile_budget: Some(TILES_PER_FRAME),
+            trails: (self.has_trails && self.trails_on)
+                .then(|| TrailStyle { pixel_ratio: self.pixel_ratio, ..TrailStyle::default() }),
         };
         let mut encoder = self.gpu.device.create_command_encoder(&Default::default());
         self.renderer.render(&self.gpu, &mut encoder, &view, &frame_input).map_err(to_js)?;

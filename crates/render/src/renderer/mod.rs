@@ -19,6 +19,7 @@ mod post;
 mod terrain;
 mod textures;
 pub mod timers;
+pub mod trails;
 mod util;
 
 use anyhow::Result;
@@ -36,9 +37,11 @@ use self::post::{CompositeSide, PostFrame, PostPass};
 use self::terrain::{ShaderConfig, ShadingUniform, TerrainPass, COLOR_FORMAT, DEPTH_FORMAT, METRICS_FORMAT};
 use self::textures::WholeTextures;
 use self::timers::{GpuTimers, Pass};
+use self::trails::{TrailFeed, TrailLayer, TrailStyle};
 use crate::camera::Pose;
 use crate::gpu::Gpu;
 use crate::params::{ShadingMode, ShadingParams};
+use relief_terrain::pack::TileIndex;
 
 /// Default size of a mesh quad on screen, in pixels.
 pub const DEFAULT_PIXELS_PER_QUAD: f32 = 5.0;
@@ -169,6 +172,8 @@ pub struct FrameInput<'a> {
     pub split: Option<f32>,
     /// Target size of a mesh quad on screen, in pixels.
     pub pixels_per_quad: f32,
+    /// How to draw the hiking trails, or `None` to leave them out.
+    pub trails: Option<TrailStyle>,
     /// Most terrain tiles to take in this frame, of those the loader has
     /// ready; only the levels the camera is close enough to show are then
     /// loaded at all. `None` waits for every tile of every level before
@@ -184,6 +189,8 @@ pub struct FrameStats {
     pub triangles: usize,
     /// Terrain tiles around the camera that are still to be loaded.
     pub missing_tiles: usize,
+    /// Trail tiles still to be loaded.
+    pub missing_trail_tiles: usize,
 }
 
 pub struct Renderer {
@@ -193,6 +200,8 @@ pub struct Renderer {
     frame_group: wgpu::BindGroup,
     terrain: TerrainPass,
     clipmap: Clipmap,
+    /// The hiking trails, where the terrain has them.
+    trails: Option<TrailLayer>,
     quadtree: Quadtree,
     selection: Selection,
     local_light: LocalLightPipelines,
@@ -213,17 +222,23 @@ impl Renderer {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn new(gpu: &Gpu, terrain: &Terrain, output_format: wgpu::TextureFormat, size: [u32; 2]) -> Self {
         let feed = Box::new(clipmap::ThreadedFeed::new(terrain));
-        Self::with_feed(gpu, terrain, feed, clipmap::FULL_REACH, output_format, size)
+        let trails = terrain.trails.as_ref().map(|trails| {
+            let feed: Box<dyn TrailFeed> = Box::new(trails::ThreadedTrailFeed::new(trails));
+            (trails.index.clone(), feed)
+        });
+        Self::with_feed(gpu, terrain, feed, clipmap::FULL_REACH, trails, output_format, size)
     }
 
     /// [`new`](Self::new) with the terrain's tiles coming from `feed`, and
     /// with `reach` tiles along a side of each streamed level loaded around
     /// the camera: [`clipmap::FULL_REACH`] or, where tiles are costly, less.
+    /// `trails` is where the hiking trails come from, if there are any.
     pub fn with_feed(
         gpu: &Gpu,
         terrain: &Terrain,
         feed: Box<dyn TileFeed>,
         reach: usize,
+        trails: Option<(TileIndex, Box<dyn TrailFeed>)>,
         output_format: wgpu::TextureFormat,
         size: [u32; 2],
     ) -> Self {
@@ -248,6 +263,7 @@ impl Renderer {
         let config =
             ShaderConfig { window_texels: clipmap::window_texels(reach), float_filtering: gpu.float_filtering };
         let pass = TerrainPass::new(device, &config);
+        let trails = trails.map(|(index, feed)| TrailLayer::new(device, &config, &pass, index, feed));
         let frame = util::uniform_buffer::<FrameUniform>(device, "frame uniform");
         let frame_group = util::bind_group(
             device,
@@ -291,6 +307,7 @@ impl Renderer {
             frame_group,
             terrain: pass,
             clipmap,
+            trails,
             quadtree: Quadtree::new(&terrain.leaf_ranges, terrain.meta.cell_size),
             selection: Selection::default(),
             local_light,
@@ -310,7 +327,8 @@ impl Renderer {
     /// Whether newly streamed terrain has changed the picture since this
     /// was last asked, even if nothing else has.
     pub fn take_streamed(&mut self) -> bool {
-        self.clipmap.take_changed()
+        let trails = self.trails.as_mut().is_some_and(TrailLayer::take_changed);
+        self.clipmap.take_changed() || trails
     }
 
     /// Call when the camera jumps to an unrelated view, so the light fields
@@ -358,6 +376,10 @@ impl Renderer {
         };
         let ahead = detail_pose.basis().forward.truncate();
         self.clipmap.update(&gpu.queue, detail_pose.position.truncate(), ahead, finest, input.tile_budget)?;
+        if let (Some(layer), Some(style)) = (&mut self.trails, &input.trails) {
+            layer.update(&gpu.device, &self.clipmap.targets(), input.tile_budget.is_none());
+            layer.set_style(&gpu.queue, style);
+        }
         // The local light fields follow the camera together.
         let placement = FieldPlacement::around(camera_xy, self.field_origin);
         self.field_origin = Some(placement.origin);
@@ -379,6 +401,7 @@ impl Renderer {
             patches: self.selection.patches.len(),
             triangles: self.selection.patches.len() * (PATCH_QUADS * PATCH_QUADS * 2) as usize,
             missing_tiles: self.clipmap.missing_tiles(),
+            missing_trail_tiles: self.trails.as_ref().map_or(0, TrailLayer::missing_tiles),
         };
 
         let tan_half_fov = (0.5 * input.fov_y).tan();
@@ -454,6 +477,10 @@ impl Renderer {
                 pass.set_scissor_rect(columns.start, 0, columns.len() as u32, height);
                 pass.set_bind_group(1, &side.group, &[]);
                 self.terrain.draw(&mut pass, &draw_list);
+                if let (Some(layer), Some(_)) = (&self.trails, &input.trails) {
+                    layer.draw(&mut pass);
+                    self.terrain.bind(&mut pass);
+                }
             }
         }
 

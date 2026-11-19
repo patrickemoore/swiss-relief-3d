@@ -17,9 +17,10 @@ export class Viewer {
      * device pixels; `layout_side` is its longer side in CSS pixels, which
      * tells a phone from a desktop. `meta` and `base` are the contents of the packed
      * terrain's `meta.json` and `base.bin`, and `data_url` is where its
-     * tiles are served from.
+     * tiles are served from. `trails_index` is the contents of
+     * `trails/index.bin` where the terrain has hiking trails.
      */
-    static create(canvas: HTMLCanvasElement, data_url: string, meta: string, base: Uint8Array, layout_side: number): Promise<Viewer>;
+    static create(canvas: HTMLCanvasElement, data_url: string, meta: string, base: Uint8Array, layout_side: number, trails_index?: Uint8Array | null): Promise<Viewer>;
     /**
      * Pointer motion in device pixels that moves the ground, or with
      * `rotate` turns and tilts the view.
@@ -46,6 +47,10 @@ export class Viewer {
      * Goes back to the view of the whole terrain: in a flight, or at once.
      */
     go_home(fly: boolean): void;
+    /**
+     * Whether the terrain came with hiking trails.
+     */
+    has_trails(): boolean;
     /**
      * The names placed over the last frame, as JSON: see `labels::Placed`.
      */
@@ -114,6 +119,10 @@ export class Viewer {
      */
     set_tour(on: boolean): void;
     /**
+     * Shows or hides the hiking trails.
+     */
+    set_trails(on: boolean): void;
+    /**
      * The state of the view as JSON, for a compass, a scale bar and such.
      */
     state(): string;
@@ -140,13 +149,14 @@ export interface InitOutput {
     readonly __wbg_viewer_free: (a: number, b: number) => void;
     readonly start: () => void;
     readonly viewer_adapter: (a: number) => [number, number];
-    readonly viewer_create: (a: any, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => any;
+    readonly viewer_create: (a: any, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => any;
     readonly viewer_drag: (a: number, b: number, c: number, d: number) => void;
     readonly viewer_face_north: (a: number) => void;
     readonly viewer_fetched_megabytes: (a: number) => number;
     readonly viewer_fly_to: (a: number, b: number, c: number) => number;
     readonly viewer_frame: (a: number, b: number) => [number, number, number];
     readonly viewer_go_home: (a: number, b: number) => void;
+    readonly viewer_has_trails: (a: number) => number;
     readonly viewer_labels: (a: number) => [number, number];
     readonly viewer_patch_look: (a: number, b: number, c: number, d: number) => [number, number];
     readonly viewer_pinch: (a: number, b: number) => void;
@@ -162,6 +172,7 @@ export interface InitOutput {
     readonly viewer_set_look: (a: number, b: number, c: number, d: number) => [number, number];
     readonly viewer_set_pixel_ratio: (a: number, b: number) => void;
     readonly viewer_set_tour: (a: number, b: number) => void;
+    readonly viewer_set_trails: (a: number, b: number) => void;
     readonly viewer_state: (a: number) => [number, number];
     readonly viewer_toggle_tilt: (a: number) => void;
     readonly viewer_wheel: (a: number, b: number) => void;
